@@ -8,6 +8,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 NOTIFYICONDATA g_TrayIcon;
 HHOOK g_hMouse;
 
+
+BOOL IsFullScreenAppRunning()
+{
+	HWND hWnd = GetForegroundWindow();
+
+	RECT rc;
+	GetWindowRect(hWnd, &rc);
+
+	if (rc.right - rc.left == GetSystemMetrics(SM_CXSCREEN) && rc.bottom - rc.top == GetSystemMetrics(SM_CYSCREEN))
+		return TRUE;
+
+	return FALSE;
+}
+
 LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	MSLLHOOKSTRUCT* pms = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
@@ -16,8 +30,11 @@ LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 	{
 		if (pms->pt.x < 2) // check if mouse x position is close to the left edge
 		{
-			HWND taskbar = FindWindow(TEXT("Shell_TrayWnd"), NULL);
-			SwitchToThisWindow(taskbar, TRUE);
+			if ( !IsFullScreenAppRunning() )
+			{
+				HWND taskbar = FindWindow(TEXT("Shell_TrayWnd"), NULL);
+				SwitchToThisWindow(taskbar, TRUE);
+			}
 		}
 	}
 
